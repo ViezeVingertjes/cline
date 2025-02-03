@@ -1301,10 +1301,15 @@ export class Cline {
 			} else {
 				// request failed after retrying automatically once, ask user if they want to retry again
 				// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-				const { response } = await this.ask(
-					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
-				)
+				const errorDetails = {
+					message: error.message || "Unknown error",
+					status: error.status || error.statusCode || "N/A",
+					details: error.details || error.response?.data || JSON.stringify(serializeError(error), null, 2),
+				}
+
+				const errorMessage = `API Request Failed\nStatus Code: ${errorDetails.status}\nError: ${errorDetails.message}\nDetails: ${errorDetails.details}`
+
+				const { response } = await this.ask("api_req_failed", errorMessage)
 				if (response !== "yesButtonClicked") {
 					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
 					throw new Error("API request failed")
