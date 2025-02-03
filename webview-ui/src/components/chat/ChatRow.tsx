@@ -940,35 +940,13 @@ export const ChatRowContent = ({ message, isExpanded, onToggleExpand, lastModifi
 									{title}
 								</div>
 							)}
-							<div
+							<p
 								style={{
 									...pStyle,
 									color: "var(--vscode-errorForeground)",
-									backgroundColor: "var(--vscode-inputValidation-errorBackground)",
-									border: "1px solid var(--vscode-inputValidation-errorBorder)",
-									borderRadius: "3px",
-									padding: "10px",
-									marginTop: "5px",
 								}}>
-								{message.text?.startsWith("API Request Failed") ? (
-									<>
-										<div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-											<i className="codicon codicon-error" style={{ marginRight: "6px" }} />
-											API Request Failed
-										</div>
-										{message.text
-											.split("\n")
-											.slice(1)
-											.map((line, index) => (
-												<div key={index} style={{ marginBottom: "4px" }}>
-													{line}
-												</div>
-											))}
-									</>
-								) : (
-									message.text
-								)}
-							</div>
+								{message.text}
+							</p>
 						</>
 					)
 				case "diff_error":
