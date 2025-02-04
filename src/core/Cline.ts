@@ -1370,29 +1370,11 @@ export class Cline {
 
 				const errorMessage = this.getErrorMessage(error)
 
-				// Mark the API request as failed
-				const lastApiReqStartedIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
-				this.clineMessages[lastApiReqStartedIndex].text = JSON.stringify({
-					...JSON.parse(this.clineMessages[lastApiReqStartedIndex].text || "{}"),
-					cancelReason: "streaming_failed", // This tells the UI that the request failed
-				} satisfies ClineApiReqInfo)
-				await this.saveClineMessages()
-
-				// Show error and ask if user wants to retry
+				// request failed after retrying automatically once, ask user if they want to retry again
 				const { response } = await this.ask("api_req_failed", errorMessage)
-
 				if (response !== "yesButtonClicked") {
-					// If user doesn't want to retry, mark the request as permanently failed
-					this.clineMessages[lastApiReqStartedIndex].text = JSON.stringify({
-						...JSON.parse(this.clineMessages[lastApiReqStartedIndex].text || "{}"),
-						streamingFailedMessage: errorMessage, // This shows the final error state
-					} satisfies ClineApiReqInfo)
-					await this.saveClineMessages()
-					await this.providerRef.deref()?.postStateToWebview()
 					throw new Error("API request failed")
 				}
-
-				// User wants to retry
 				await this.say("api_req_retried")
 			}
 			// delegate generator output from the recursive call
