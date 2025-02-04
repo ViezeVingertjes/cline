@@ -33,8 +33,6 @@ interface OpenRouterProviderSettingsProps {
 
 const OpenRouterProviderSettings: React.FC<OpenRouterProviderSettingsProps> = ({ modelId, preferences, onChange }) => {
 	const { apiConfiguration, openRouterModels } = useExtensionState()
-	const [excludedProviders, setExcludedProviders] = useState<string>(preferences.excludeProviders?.join(", ") || "")
-
 	const modelInfo = openRouterModels[modelId] as OpenRouterModelInfo
 	const availableProviders = modelInfo?.providers || []
 
@@ -51,23 +49,6 @@ const OpenRouterProviderSettings: React.FC<OpenRouterProviderSettingsProps> = ({
 		onChange({
 			...preferences,
 			allowFallbacks: target.checked,
-		})
-	}
-
-	const handleExcludedProvidersChange = (e: Event | React.FormEvent<HTMLElement>) => {
-		const target = e.target as HTMLInputElement
-		const value = target.value
-		setExcludedProviders(value)
-
-		// Convert comma-separated string to array, trim whitespace
-		const excludeProviders = value
-			.split(",")
-			.map((provider) => provider.trim())
-			.filter((provider) => provider.length > 0)
-
-		onChange({
-			...preferences,
-			excludeProviders: excludeProviders.length > 0 ? excludeProviders : undefined,
 		})
 	}
 
@@ -95,16 +76,6 @@ const OpenRouterProviderSettings: React.FC<OpenRouterProviderSettingsProps> = ({
 					onChange={handleAllowFallbacksChange}>
 					Allow fallbacks to other providers
 				</VSCodeCheckbox>
-			</SettingRow>
-
-			<SettingRow>
-				<Label htmlFor="exclude-providers">Excluded Providers</Label>
-				<VSCodeTextField
-					id="exclude-providers"
-					placeholder="Enter provider names separated by commas"
-					value={excludedProviders}
-					onInput={handleExcludedProvidersChange}
-				/>
 			</SettingRow>
 		</SettingsContainer>
 	)

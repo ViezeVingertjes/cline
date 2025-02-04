@@ -8,6 +8,7 @@ import pWaitFor from "p-wait-for"
 import * as path from "path"
 import * as vscode from "vscode"
 import { buildApiHandler } from "../../api"
+import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { downloadTask } from "../../integrations/misc/export-markdown"
 import { openFile, openImage } from "../../integrations/misc/open-file"
 import { selectImages } from "../../integrations/misc/process-images"
@@ -653,6 +654,22 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					case "refreshOpenRouterModels":
 						await this.refreshOpenRouterModels()
 						break
+					case "requestModelProviders":
+						if (message.text) {
+							const { apiConfiguration } = await this.getState()
+							const handler = new OpenRouterHandler({
+								openRouterApiKey: apiConfiguration.openRouterApiKey,
+							})
+							const providers = await handler.getModelProviders(message.text)
+
+							// Update the model info with the providers
+							const openRouterModels = await this.readOpenRouterModels()
+							if (openRouterModels && openRouterModels[message.text]) {
+								openRouterModels[message.text].providers = providers
+								await this.updateOpenRouterModels(openRouterModels)
+							}
+						}
+						break
 					case "refreshOpenAiModels":
 						const { apiConfiguration } = await this.getState()
 						const openAiModels = await this.getOpenAiModels(
@@ -1016,6 +1033,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		const cacheDir = path.join(this.context.globalStorageUri.fsPath, "cache")
 		await fs.mkdir(cacheDir, { recursive: true })
 		return cacheDir
+	}
+
+	private async updateOpenRouterModels(models: Record<string, ModelInfo>) {
+		const openRouterModelsFilePath = path.join(await this.ensureCacheDirectoryExists(), GlobalFileNames.openRouterModels)
+		await fs.writeFile(openRouterModelsFilePath, JSON.stringify(models))
+		await this.postMessageToWebview({
+			type: "openRouterModels",
+			openRouterModels: models,
+		})
+		return models
 	}
 
 	async readOpenRouterModels(): Promise<Record<string, ModelInfo> | undefined> {

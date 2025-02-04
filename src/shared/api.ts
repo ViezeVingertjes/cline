@@ -65,6 +65,7 @@ export interface ModelInfo {
 	cacheWritesPrice?: number
 	cacheReadsPrice?: number
 	description?: string
+	providers?: string[]
 }
 
 // Anthropic

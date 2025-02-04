@@ -26,7 +26,7 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 	const dropdownListRef = useRef<HTMLDivElement>(null)
 
 	const handleModelChange = (newModelId: string) => {
-		// could be setting invalid model id/undefined info but validation will catch it
+		// Update configuration with model info
 		setApiConfiguration({
 			...apiConfiguration,
 			...{
@@ -35,8 +35,14 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 			},
 		})
 		setSearchTerm(newModelId)
-		// Refresh providers when model changes
-		vscode.postMessage({ type: "refreshOpenRouterModels" })
+
+		// Request providers for this specific model
+		if (newModelId) {
+			vscode.postMessage({
+				type: "requestModelProviders",
+				text: newModelId,
+			})
+		}
 	}
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {
