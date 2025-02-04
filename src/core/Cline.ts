@@ -2,7 +2,6 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import cloneDeep from "clone-deep"
 import delay from "delay"
 import fs from "fs/promises"
-import { checkFileEditingPrevention } from "./file-editing-prevention"
 import getFolderSize from "get-folder-size"
 import os from "os"
 import pWaitFor from "p-wait-for"
@@ -1195,46 +1194,12 @@ export class Cline {
 		return false
 	}
 
-	/**
-	 * Converts API errors into user-friendly messages based on HTTP status codes.
-	 * @param error - The error object from any API provider
-	 * @returns A user-friendly error message
-	 *
-	 * Common status codes handled:
-	 * - 400: Invalid request
-	 * - 401/403: Authentication failures
-	 * - 404: Endpoint not found
-	 * - 429: Rate limiting
-	 * - 500-504: Server errors
-	 */
-	private getErrorMessage(error: unknown): string {
-		if (!(error instanceof Error)) {
-			return "An unexpected error occurred"
-		}
+	private formatErrorWithStatusCode(error: any): string {
+		const statusCode = error.status || error.statusCode || (error.response && error.response.status)
+		const message = error.message ?? JSON.stringify(serializeError(error), null, 2)
 
-		const status = (error as any).status || (error as any).statusCode
-		if (!status) {
-			return error.message
-		}
-
-		switch (status) {
-			case 400:
-				return "Invalid request - " + error.message
-			case 401:
-			case 403:
-				return "Authentication failed - please check your API key"
-			case 404:
-				return "API endpoint not found - please check your configuration"
-			case 429:
-				return "Rate limit exceeded - please try again in a few moments"
-			case 500:
-			case 502:
-			case 503:
-			case 504:
-				return "The API service is currently unavailable - please try again later"
-			default:
-				return error.message
-		}
+		// Only prepend the statusCode if it's not already part of the message
+		return statusCode && !message.includes(statusCode.toString()) ? `${statusCode} - ${message}` : message
 	}
 
 	async *attemptApiRequest(previousApiReqIndex: number): ApiStream {
@@ -1285,16 +1250,6 @@ export class Cline {
 				if (this.api instanceof OpenAiHandler && this.api.getModel().id.toLowerCase().includes("deepseek")) {
 					contextWindow = 64_000
 				}
-
-				// Get user's custom context window setting
-				const config = vscode.workspace.getConfiguration("cline")
-				const customContextWindow = config.get<number>("maxContextWindow") || 0
-
-				// Use custom context window if it's set and smaller than model's context window
-				if (customContextWindow > 0 && customContextWindow < contextWindow) {
-					contextWindow = customContextWindow
-				}
-
 				let maxAllowedSize: number
 				switch (contextWindow) {
 					case 64_000: // deepseek models
@@ -1307,13 +1262,7 @@ export class Cline {
 						maxAllowedSize = contextWindow - 40_000
 						break
 					default:
-						// For custom sizes or other models, use a proportional buffer
-						// Use 20% buffer for smaller context windows (< 100k)
-						// Use larger fixed buffer (40k) for larger context windows
-						maxAllowedSize =
-							contextWindow < 100_000
-								? Math.floor(contextWindow * 0.8) // 20% buffer for small windows
-								: contextWindow - 40_000 // 40k buffer for large windows
+						maxAllowedSize = Math.max(contextWindow - 40_000, contextWindow * 0.8) // for deepseek, 80% of 64k meant only ~10k buffer which was too small and resulted in users getting context window errors.
 				}
 
 				// This is the most reliable way to know when we're close to hitting the context window.
@@ -1358,28 +1307,13 @@ export class Cline {
 				await delay(1000)
 				this.didAutomaticallyRetryFailedApiRequest = true
 			} else {
-				// Log full error for debugging
-				console.error("API Request Error:", {
-					message: error.message,
-					stack: error.stack,
-					status: (error as any).status,
-					name: error.name,
-					code: (error as any).code,
-					type: error.constructor.name,
-				})
-
-				const errorMessage = this.getErrorMessage(error)
-
 				// request failed after retrying automatically once, ask user if they want to retry again
 				// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-				// Extract status code if available in error object
-				const statusCode = error.status || error.statusCode || (error.response && error.response.status)
-				const errorMessage = statusCode
-					? `API Request Error (${statusCode}): ${error.message ?? JSON.stringify(serializeError(error), null, 2)}`
-					: `API Request Error: ${error.message ?? JSON.stringify(serializeError(error), null, 2)}`
+				const errorMessage = this.formatErrorWithStatusCode(error)
 
 				const { response } = await this.ask("api_req_failed", errorMessage)
 				if (response !== "yesButtonClicked") {
+					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
 					throw new Error("API request failed")
 				}
 				await this.say("api_req_retried")
@@ -1641,14 +1575,6 @@ export class Cline {
 				switch (block.name) {
 					case "write_to_file":
 					case "replace_in_file": {
-						// Check if file editing should be prevented
-						const preventionResult = checkFileEditingPrevention(this.chatSettings)
-						if (preventionResult.isPreventingEdit) {
-							pushToolResult(preventionResult.toolError!)
-							await this.saveCheckpoint()
-							break
-						}
-
 						const relPath: string | undefined = block.params.path
 						let content: string | undefined = block.params.content // for write_to_file
 						let diff: string | undefined = block.params.diff // for replace_in_file
@@ -3133,11 +3059,7 @@ export class Cline {
 				// abandoned happens when extension is no longer waiting for the cline instance to finish aborting (error is thrown here when any function in the for loop throws due to this.abort)
 				if (!this.abandoned) {
 					this.abortTask() // if the stream failed, there's various states the task could be in (i.e. could have streamed some tools the user may have executed), so we just resort to replicating a cancel task
-					// Extract status code if available in error object
-					const statusCode = error.status || error.statusCode || (error.response && error.response.status)
-					const errorMessage = statusCode
-						? `API Request Error (${statusCode}): ${error.message ?? JSON.stringify(serializeError(error), null, 2)}`
-						: `API Request Error: ${error.message ?? JSON.stringify(serializeError(error), null, 2)}`
+					const errorMessage = this.formatErrorWithStatusCode(error)
 
 					await abortStream("streaming_failed", errorMessage)
 					const history = await this.providerRef.deref()?.getTaskWithId(this.taskId)
