@@ -161,6 +161,16 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Enables extension to save checkpoints of workspace throughout the task."
+				},
+				"cline.experimentalTruncation": {
+					"type": "boolean",
+					"default": false,
+					"description": "Use experimental truncation strategy for managing conversation history"
+				},
+				"cline.maxContextWindow": {
+					"type": "number",
+					"default": 0,
+					"description": "Custom maximum context window size (in tokens). Set to 0 to use model's default. Cannot exceed model's maximum context window."
 				}
 			}
 		}

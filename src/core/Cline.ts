@@ -1285,6 +1285,16 @@ export class Cline {
 				if (this.api instanceof OpenAiHandler && this.api.getModel().id.toLowerCase().includes("deepseek")) {
 					contextWindow = 64_000
 				}
+
+				// Get user's custom context window setting
+				const config = vscode.workspace.getConfiguration("cline")
+				const customContextWindow = config.get<number>("maxContextWindow") || 0
+
+				// Use custom context window if it's set and smaller than model's context window
+				if (customContextWindow > 0 && customContextWindow < contextWindow) {
+					contextWindow = customContextWindow
+				}
+
 				let maxAllowedSize: number
 				switch (contextWindow) {
 					case 64_000: // deepseek models
@@ -1297,7 +1307,13 @@ export class Cline {
 						maxAllowedSize = contextWindow - 40_000
 						break
 					default:
-						maxAllowedSize = Math.max(contextWindow - 40_000, contextWindow * 0.8) // for deepseek, 80% of 64k meant only ~10k buffer which was too small and resulted in users getting context window errors.
+						// For custom sizes or other models, use a proportional buffer
+						// Use 20% buffer for smaller context windows (< 100k)
+						// Use larger fixed buffer (40k) for larger context windows
+						maxAllowedSize =
+							contextWindow < 100_000
+								? Math.floor(contextWindow * 0.8) // 20% buffer for small windows
+								: contextWindow - 40_000 // 40k buffer for large windows
 				}
 
 				// This is the most reliable way to know when we're close to hitting the context window.
