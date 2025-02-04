@@ -1194,6 +1194,48 @@ export class Cline {
 		return false
 	}
 
+	/**
+	 * Converts API errors into user-friendly messages based on HTTP status codes.
+	 * @param error - The error object from any API provider
+	 * @returns A user-friendly error message
+	 *
+	 * Common status codes handled:
+	 * - 400: Invalid request
+	 * - 401/403: Authentication failures
+	 * - 404: Endpoint not found
+	 * - 429: Rate limiting
+	 * - 500-504: Server errors
+	 */
+	private getErrorMessage(error: unknown): string {
+		if (!(error instanceof Error)) {
+			return "An unexpected error occurred"
+		}
+
+		const status = (error as any).status || (error as any).statusCode
+		if (!status) {
+			return error.message
+		}
+
+		switch (status) {
+			case 400:
+				return "Invalid request - " + error.message
+			case 401:
+			case 403:
+				return "Authentication failed - please check your API key"
+			case 404:
+				return "API endpoint not found - please check your configuration"
+			case 429:
+				return "Rate limit exceeded - please try again in a few moments"
+			case 500:
+			case 502:
+			case 503:
+			case 504:
+				return "The API service is currently unavailable - please try again later"
+			default:
+				return error.message
+		}
+	}
+
 	async *attemptApiRequest(previousApiReqIndex: number): ApiStream {
 		// Wait for MCP servers to be connected before generating system prompt
 		await pWaitFor(() => this.providerRef.deref()?.mcpHub?.isConnecting !== true, { timeout: 10_000 }).catch(() => {
@@ -1299,14 +1341,21 @@ export class Cline {
 				await delay(1000)
 				this.didAutomaticallyRetryFailedApiRequest = true
 			} else {
+				// Log full error for debugging
+				console.error("API Request Error:", {
+					message: error.message,
+					stack: error.stack,
+					status: (error as any).status,
+					name: error.name,
+					code: (error as any).code,
+					type: error.constructor.name,
+				})
+
+				const errorMessage = this.getErrorMessage(error)
+
 				// request failed after retrying automatically once, ask user if they want to retry again
-				// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-				const { response } = await this.ask(
-					"api_req_failed",
-					error.message ?? JSON.stringify(serializeError(error), null, 2),
-				)
+				const { response } = await this.ask("api_req_failed", errorMessage)
 				if (response !== "yesButtonClicked") {
-					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
 					throw new Error("API request failed")
 				}
 				await this.say("api_req_retried")
