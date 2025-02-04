@@ -37,6 +37,7 @@ import { useExtensionState } from "../../context/ExtensionStateContext"
 import { vscode } from "../../utils/vscode"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import OpenRouterModelPicker, { ModelDescriptionMarkdown } from "./OpenRouterModelPicker"
+import OpenRouterProviderSettings from "./OpenRouterProviderSettings"
 import styled from "styled-components"
 import * as vscodemodels from "vscode"
 
@@ -841,7 +842,21 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage, is
 					</>
 				)}
 
-			{selectedProvider === "openrouter" && showModelOptions && <OpenRouterModelPicker isPopup={isPopup} />}
+			{selectedProvider === "openrouter" && (
+				<>
+					{showModelOptions && <OpenRouterModelPicker isPopup={isPopup} />}
+					<OpenRouterProviderSettings
+						modelId={selectedModelId}
+						preferences={apiConfiguration?.openRouterProviderPreferences || {}}
+						onChange={(preferences) => {
+							setApiConfiguration({
+								...apiConfiguration,
+								openRouterProviderPreferences: preferences,
+							})
+						}}
+					/>
+				</>
+			)}
 
 			{modelIdErrorMessage && (
 				<p

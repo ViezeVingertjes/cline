@@ -118,6 +118,17 @@ export class OpenRouterHandler implements ApiHandler {
 			shouldApplyMiddleOutTransform = true
 		}
 
+		// Build provider preferences if specified
+		const provider = this.options.openRouterProviderPreferences
+			? {
+					order: this.options.openRouterProviderPreferences.preferredProvider
+						? [this.options.openRouterProviderPreferences.preferredProvider]
+						: undefined,
+					allow_fallbacks: this.options.openRouterProviderPreferences.allowFallbacks,
+					ignore: this.options.openRouterProviderPreferences.excludeProviders,
+				}
+			: undefined
+
 		// @ts-ignore-next-line
 		const stream = await this.client.chat.completions.create({
 			model: model.id,
@@ -128,6 +139,7 @@ export class OpenRouterHandler implements ApiHandler {
 			stream: true,
 			transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
 			include_reasoning: true,
+			provider: provider,
 		})
 
 		let genId: string | undefined
@@ -225,5 +237,27 @@ export class OpenRouterHandler implements ApiHandler {
 			return { id: modelId, info: modelInfo }
 		}
 		return { id: openRouterDefaultModelId, info: openRouterDefaultModelInfo }
+	}
+
+	/**
+	 * Fetches available providers for a given model ID from OpenRouter API
+	 * @param modelId The OpenRouter model ID to get providers for
+	 * @returns Array of provider names that can serve this model
+	 */
+	async getModelProviders(modelId: string): Promise<string[]> {
+		try {
+			const response = await axios.get("https://openrouter.ai/api/v1/models", {
+				headers: {
+					Authorization: `Bearer ${this.options.openRouterApiKey}`,
+				},
+			})
+
+			const modelInfo = response.data.data.find((model: any) => model.id === modelId)
+
+			return modelInfo?.providers || []
+		} catch (error) {
+			console.error("Error fetching OpenRouter model providers:", error)
+			return []
+		}
 	}
 }

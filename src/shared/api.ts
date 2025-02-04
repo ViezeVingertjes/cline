@@ -12,6 +12,12 @@ export type ApiProvider =
 	| "mistral"
 	| "vscode-lm"
 
+export interface OpenRouterProviderPreferences {
+	preferredProvider?: string // Single preferred provider
+	allowFallbacks?: boolean // Whether to allow fallbacks (default true)
+	excludeProviders?: string[] // Providers to ignore
+}
+
 export interface ApiHandlerOptions {
 	apiModelId?: string
 	apiKey?: string // anthropic
@@ -19,6 +25,7 @@ export interface ApiHandlerOptions {
 	openRouterApiKey?: string
 	openRouterModelId?: string
 	openRouterModelInfo?: ModelInfo
+	openRouterProviderPreferences?: OpenRouterProviderPreferences
 	awsAccessKey?: string
 	awsSecretKey?: string
 	awsSessionToken?: string
