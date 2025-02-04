@@ -35,6 +35,8 @@ const OpenRouterModelPicker: React.FC<OpenRouterModelPickerProps> = ({ isPopup }
 			},
 		})
 		setSearchTerm(newModelId)
+		// Refresh providers when model changes
+		vscode.postMessage({ type: "refreshOpenRouterModels" })
 	}
 
 	const { selectedModelId, selectedModelInfo } = useMemo(() => {

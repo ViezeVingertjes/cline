@@ -1,8 +1,12 @@
 import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import React, { useEffect, useState } from "react"
 import styled from "styled-components"
-import { OpenRouterProviderPreferences } from "../../../../src/shared/api"
+import { ModelInfo, OpenRouterProviderPreferences } from "../../../../src/shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
+
+interface OpenRouterModelInfo extends ModelInfo {
+	providers?: string[]
+}
 
 const SettingsContainer = styled.div`
 	display: flex;
@@ -28,31 +32,11 @@ interface OpenRouterProviderSettingsProps {
 }
 
 const OpenRouterProviderSettings: React.FC<OpenRouterProviderSettingsProps> = ({ modelId, preferences, onChange }) => {
-	const [availableProviders, setAvailableProviders] = useState<string[]>([])
+	const { apiConfiguration, openRouterModels } = useExtensionState()
 	const [excludedProviders, setExcludedProviders] = useState<string>(preferences.excludeProviders?.join(", ") || "")
 
-	// Fetch available providers when model changes
-	useEffect(() => {
-		const fetchProviders = async () => {
-			try {
-				const response = await fetch(`https://openrouter.ai/api/v1/models`, {
-					headers: {
-						Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-					},
-				})
-				const data = await response.json()
-				const modelInfo = data.data.find((model: any) => model.id === modelId)
-				setAvailableProviders(modelInfo?.providers || [])
-			} catch (error) {
-				console.error("Error fetching providers:", error)
-				setAvailableProviders([])
-			}
-		}
-
-		if (modelId) {
-			fetchProviders()
-		}
-	}, [modelId])
+	const modelInfo = openRouterModels[modelId] as OpenRouterModelInfo
+	const availableProviders = modelInfo?.providers || []
 
 	const handlePreferredProviderChange = (e: Event | React.FormEvent<HTMLElement>) => {
 		const target = e.target as HTMLSelectElement
@@ -96,7 +80,7 @@ const OpenRouterProviderSettings: React.FC<OpenRouterProviderSettingsProps> = ({
 					value={preferences.preferredProvider || ""}
 					onChange={handlePreferredProviderChange}>
 					<VSCodeOption value="">No preference</VSCodeOption>
-					{availableProviders.map((provider) => (
+					{availableProviders.map((provider: string) => (
 						<VSCodeOption key={provider} value={provider}>
 							{provider}
 						</VSCodeOption>
