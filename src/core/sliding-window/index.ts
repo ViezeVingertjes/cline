@@ -84,14 +84,20 @@ export function getNextTruncationRange(
 
 export function getTruncatedMessages(
 	messages: Anthropic.Messages.MessageParam[],
-	deletedRange: [number, number] | undefined,
+	deletedRange?: [number, number],
 ): Anthropic.Messages.MessageParam[] {
 	if (!deletedRange) {
 		return messages
 	}
 
-	const [start, end] = deletedRange
-	// the range is inclusive - both start and end indices and everything in between will be removed from the final result.
-	// NOTE: if you try to console log these, don't forget that logging a reference to an array may not provide the same result as logging a slice() snapshot of that array at that exact moment. The following DOES in fact include the latest assistant message.
-	return [...messages.slice(0, start), ...messages.slice(end + 1)]
+	// If the deleted range spans the entire conversation except first and last messages,
+	// it means we're using the new summarization approach
+	if (deletedRange[0] === 1 && deletedRange[1] === messages.length - 2) {
+		// Return the first message (task) and the last message (summary)
+		return [messages[0], messages[messages.length - 1]]
+	}
+
+	// Otherwise use the existing truncation logic
+	const [startIndex, endIndex] = deletedRange
+	return [...messages.slice(0, startIndex), ...messages.slice(endIndex + 1)]
 }
