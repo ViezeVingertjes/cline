@@ -255,38 +255,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							${totalCost?.toFixed(4)}
 						</div>
 					)}
-					<VSCodeButton
-						appearance="icon"
-						title="Summarize context to reduce token usage"
-						onClick={() => {
-							setSummarizeState("loading")
-							vscode.postMessage({
-								type: "summarizeContext",
-							})
-						}}
-						disabled={summarizeState !== "idle"}
-						style={{
-							marginLeft: 6,
-							flexShrink: 0,
-							color:
-								summarizeState === "success"
-									? "var(--vscode-testing-iconPassed)"
-									: summarizeState === "error"
-										? "var(--vscode-testing-iconFailed)"
-										: "inherit",
-						}}>
-						<span
-							className={`codicon ${
-								summarizeState === "loading"
-									? "codicon-loading codicon-modifier-spin"
-									: summarizeState === "success"
-										? "codicon-check"
-										: summarizeState === "error"
-											? "codicon-error"
-											: "codicon-combine"
-							}`}
-						/>
-					</VSCodeButton>
+
 					<VSCodeButton appearance="icon" onClick={onClose} style={{ marginLeft: 6, flexShrink: 0 }}>
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
@@ -480,7 +449,40 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 										<span style={{ fontWeight: "bold" }}>API Cost:</span>
 										<span>${totalCost?.toFixed(4)}</span>
 									</div>
-									<DeleteButton taskSize={formatSize(currentTaskItem?.size)} taskId={currentTaskItem?.id} />
+									<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+										<VSCodeButton
+											appearance="icon"
+											title="Summarize context to reduce token usage"
+											onClick={() => {
+												setSummarizeState("loading")
+												vscode.postMessage({
+													type: "summarizeContext",
+												})
+											}}
+											disabled={summarizeState !== "idle"}
+											style={{
+												flexShrink: 0,
+												color:
+													summarizeState === "success"
+														? "var(--vscode-testing-iconPassed)"
+														: summarizeState === "error"
+															? "var(--vscode-testing-iconFailed)"
+															: "inherit",
+											}}>
+											<span
+												className={`codicon ${
+													summarizeState === "loading"
+														? "codicon-loading codicon-modifier-spin"
+														: summarizeState === "success"
+															? "codicon-check"
+															: summarizeState === "error"
+																? "codicon-error"
+																: "codicon-combine"
+												}`}
+											/>
+										</VSCodeButton>
+										<DeleteButton taskSize={formatSize(currentTaskItem?.size)} taskId={currentTaskItem?.id} />
+									</div>
 								</div>
 							)}
 							{checkpointTrackerErrorMessage && (
