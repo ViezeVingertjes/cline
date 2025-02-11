@@ -1097,11 +1097,20 @@ export class Cline {
    - Be specific about what worked and what didn't
 
 The summary must preserve enough context to continue the task while focusing on the most relevant information for the current state.`
-			const stream = this.api.createMessage(summarySystemPrompt, this.apiConversationHistory)
-
 			let summary = ""
-			for await (const chunk of stream) {
-				summary += chunk
+			try {
+				const stream = this.api.createMessage(summarySystemPrompt, this.apiConversationHistory)
+				for await (const chunk of stream) {
+					if (typeof chunk === "string") {
+						summary += chunk
+					}
+				}
+				if (!summary.trim()) {
+					throw new Error("No summary content received from API")
+				}
+			} catch (error) {
+				console.error("Failed to generate summary:", error)
+				throw new Error(`Failed to generate summary: ${error instanceof Error ? error.message : "Unknown error"}`)
 			}
 
 			// Keep the original task and gather context
@@ -1127,13 +1136,18 @@ The summary must preserve enough context to continue the task while focusing on 
 				.filter(
 					(msg) =>
 						msg !== originalTask && // Don't duplicate the original task
-						msg.content &&
-						msg.content.trim() !== "", // Ensure message has content
+						typeof msg?.content === "string" && // Ensure content is a string
+						msg.content.trim().length > 0, // Ensure non-empty content
 				)
 
 			// Get the current state from the most recent message
-			const currentState =
-				this.apiConversationHistory[this.apiConversationHistory.length - 1]?.content || "Continuing the task..."
+			const currentState = (() => {
+				const lastMsg = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+				if (lastMsg && typeof lastMsg.content === "string" && lastMsg.content.trim().length > 0) {
+					return lastMsg.content
+				}
+				return "Continuing the task..."
+			})()
 
 			// Create a comprehensive summary message
 			const summaryMessage = {
