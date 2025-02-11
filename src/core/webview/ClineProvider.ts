@@ -119,10 +119,10 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	}
 
 	/*
-	VSCode extensions use the disposable pattern to clean up resources when the sidebar/editor tab is closed by the user or system. This applies to event listening, commands, interacting with the UI, etc.
-	- https://vscode-docs.readthedocs.io/en/stable/extensions/patterns-and-principles/
-	- https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
-	*/
+        VSCode extensions use the disposable pattern to clean up resources when the sidebar/editor tab is closed by the user or system. This applies to event listening, commands, interacting with the UI, etc.
+        - https://vscode-docs.readthedocs.io/en/stable/extensions/patterns-and-principles/
+        - https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
+        */
 	async dispose() {
 		this.outputChannel.appendLine("Disposing ClineProvider...")
 		await this.clearTask()
@@ -338,8 +338,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
         create a content security policy meta tag so that only loading scripts with a nonce is allowed
         As your extension grows you will likely want to add custom styles, fonts, and/or images to your webview. If you do, you will need to update the content security policy meta tag to explicity allow for these resources. E.g.
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
-		- 'unsafe-inline' is required for styles due to vscode-webview-toolkit's dynamic style injection
-		- since we pass base64 images to the webview, we need to specify img-src ${webview.cspSource} data:;
+                - 'unsafe-inline' is required for styles due to vscode-webview-toolkit's dynamic style injection
+                - since we pass base64 images to the webview, we need to specify img-src ${webview.cspSource} data:;
 
         in meta tag we add nonce attribute: A cryptographic nonce (only used once) to allow scripts. The server must generate a unique nonce value each time it transmits a policy. It is critical to provide a nonce that cannot be guessed as bypassing a resource's policy is otherwise trivial.
         */
@@ -355,7 +355,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
             <meta name="theme-color" content="#000000">
             <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https: data:; script-src 'nonce-${nonce}';">
             <link rel="stylesheet" type="text/css" href="${stylesUri}">
-			<link href="${codiconsUri}" rel="stylesheet" />
+                        <link href="${codiconsUri}" rel="stylesheet" />
             <title>Cline</title>
           </head>
           <body>
@@ -627,10 +627,10 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						}
 						break
 					// case "relaunchChromeDebugMode":
-					// 	if (this.cline) {
-					// 		this.cline.browserSession.relaunchChromeDebugMode()
-					// 	}
-					// 	break
+					//      if (this.cline) {
+					//              this.cline.browserSession.relaunchChromeDebugMode()
+					//      }
+					//      break
 					case "askResponse":
 						this.cline?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
 						break
@@ -1032,6 +1032,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			}
 		} catch (error) {
 			console.error("Error exchanging code for API key:", error)
+			console.error("Error details:", error.response?.data || error.message)
 			throw error
 		}
 
@@ -1071,31 +1072,31 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		try {
 			const response = await axios.get("https://openrouter.ai/api/v1/models")
 			/*
-			{
-				"id": "anthropic/claude-3.5-sonnet",
-				"name": "Anthropic: Claude 3.5 Sonnet",
-				"created": 1718841600,
-				"description": "Claude 3.5 Sonnet delivers better-than-Opus capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Sonnet is particularly good at:\n\n- Coding: Autonomously writes, edits, and runs code with reasoning and troubleshooting\n- Data science: Augments human data science expertise; navigates unstructured data while using multiple tools for insights\n- Visual processing: excelling at interpreting charts, graphs, and images, accurately transcribing text to derive insights beyond just the text alone\n- Agentic tasks: exceptional tool use, making it great at agentic tasks (i.e. complex, multi-step problem solving tasks that require engaging with other systems)\n\n#multimodal",
-				"context_length": 200000,
-				"architecture": {
-					"modality": "text+image-\u003Etext",
-					"tokenizer": "Claude",
-					"instruct_type": null
-				},
-				"pricing": {
-					"prompt": "0.000003",
-					"completion": "0.000015",
-					"image": "0.0048",
-					"request": "0"
-				},
-				"top_provider": {
-					"context_length": 200000,
-					"max_completion_tokens": 8192,
-					"is_moderated": true
-				},
-				"per_request_limits": null
-			},
-			*/
+                        {
+                                "id": "anthropic/claude-3.5-sonnet",
+                                "name": "Anthropic: Claude 3.5 Sonnet",
+                                "created": 1718841600,
+                                "description": "Claude 3.5 Sonnet delivers better-than-Opus capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Sonnet is particularly good at:\n\n- Coding: Autonomously writes, edits, and runs code with reasoning and troubleshooting\n- Data science: Augments human data science expertise; navigates unstructured data while using multiple tools for insights\n- Visual processing: excelling at interpreting charts, graphs, and images, accurately transcribing text to derive insights beyond just the text alone\n- Agentic tasks: exceptional tool use, making it great at agentic tasks (i.e. complex, multi-step problem solving tasks that require engaging with other systems)\n\n#multimodal",
+                                "context_length": 200000,
+                                "architecture": {
+                                        "modality": "text+image-\u003Etext",
+                                        "tokenizer": "Claude",
+                                        "instruct_type": null
+                                },
+                                "pricing": {
+                                        "prompt": "0.000003",
+                                        "completion": "0.000015",
+                                        "image": "0.0048",
+                                        "request": "0"
+                                },
+                                "top_provider": {
+                                        "context_length": 200000,
+                                        "max_completion_tokens": 8192,
+                                        "is_moderated": true
+                                },
+                                "per_request_limits": null
+                        },
+                        */
 			if (response.data?.data) {
 				const rawModels = response.data.data
 				const parsePrice = (price: any) => {
@@ -1171,6 +1172,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			await fs.writeFile(openRouterModelsFilePath, JSON.stringify(models))
 			console.log("OpenRouter models fetched and saved", models)
 		} catch (error) {
+			console.error("Error details:", error.response?.data || error.message)
 			console.error("Error fetching OpenRouter models:", error)
 		}
 
@@ -1323,48 +1325,48 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	// Caching mechanism to keep track of webview messages + API conversation history per provider instance
 
 	/*
-	Now that we use retainContextWhenHidden, we don't have to store a cache of cline messages in the user's state, but we could to reduce memory footprint in long conversations.
+        Now that we use retainContextWhenHidden, we don't have to store a cache of cline messages in the user's state, but we could to reduce memory footprint in long conversations.
 
-	- We have to be careful of what state is shared between ClineProvider instances since there could be multiple instances of the extension running at once. For example when we cached cline messages using the same key, two instances of the extension could end up using the same key and overwriting each other's messages.
-	- Some state does need to be shared between the instances, i.e. the API key--however there doesn't seem to be a good way to notify the other instances that the API key has changed.
+        - We have to be careful of what state is shared between ClineProvider instances since there could be multiple instances of the extension running at once. For example when we cached cline messages using the same key, two instances of the extension could end up using the same key and overwriting each other's messages.
+        - Some state does need to be shared between the instances, i.e. the API key--however there doesn't seem to be a good way to notify the other instances that the API key has changed.
 
-	We need to use a unique identifier for each ClineProvider instance's message cache since we could be running several instances of the extension outside of just the sidebar i.e. in editor panels.
+        We need to use a unique identifier for each ClineProvider instance's message cache since we could be running several instances of the extension outside of just the sidebar i.e. in editor panels.
 
-	// conversation history to send in API requests
+        // conversation history to send in API requests
 
-	/*
-	It seems that some API messages do not comply with vscode state requirements. Either the Anthropic library is manipulating these values somehow in the backend in a way thats creating cyclic references, or the API returns a function or a Symbol as part of the message content.
-	VSCode docs about state: "The value must be JSON-stringifyable ... value — A value. MUST not contain cyclic references."
-	For now we'll store the conversation history in memory, and if we need to store in state directly we'd need to do a manual conversion to ensure proper json stringification.
-	*/
+        /*
+        It seems that some API messages do not comply with vscode state requirements. Either the Anthropic library is manipulating these values somehow in the backend in a way thats creating cyclic references, or the API returns a function or a Symbol as part of the message content.
+        VSCode docs about state: "The value must be JSON-stringifyable ... value — A value. MUST not contain cyclic references."
+        For now we'll store the conversation history in memory, and if we need to store in state directly we'd need to do a manual conversion to ensure proper json stringification.
+        */
 
 	// getApiConversationHistory(): Anthropic.MessageParam[] {
-	// 	// const history = (await this.getGlobalState(
-	// 	// 	this.getApiConversationHistoryStateKey()
-	// 	// )) as Anthropic.MessageParam[]
-	// 	// return history || []
-	// 	return this.apiConversationHistory
+	//      // const history = (await this.getGlobalState(
+	//      //      this.getApiConversationHistoryStateKey()
+	//      // )) as Anthropic.MessageParam[]
+	//      // return history || []
+	//      return this.apiConversationHistory
 	// }
 
 	// setApiConversationHistory(history: Anthropic.MessageParam[] | undefined) {
-	// 	// await this.updateGlobalState(this.getApiConversationHistoryStateKey(), history)
-	// 	this.apiConversationHistory = history || []
+	//      // await this.updateGlobalState(this.getApiConversationHistoryStateKey(), history)
+	//      this.apiConversationHistory = history || []
 	// }
 
 	// addMessageToApiConversationHistory(message: Anthropic.MessageParam): Anthropic.MessageParam[] {
-	// 	// const history = await this.getApiConversationHistory()
-	// 	// history.push(message)
-	// 	// await this.setApiConversationHistory(history)
-	// 	// return history
-	// 	this.apiConversationHistory.push(message)
-	// 	return this.apiConversationHistory
+	//      // const history = await this.getApiConversationHistory()
+	//      // history.push(message)
+	//      // await this.setApiConversationHistory(history)
+	//      // return history
+	//      this.apiConversationHistory.push(message)
+	//      return this.apiConversationHistory
 	// }
 
 	/*
-	Storage
-	https://dev.to/kompotkot/how-to-use-secretstorage-in-your-vscode-extensions-2hco
-	https://www.eliostruyf.com/devhack-code-extension-storage-options/
-	*/
+        Storage
+        https://dev.to/kompotkot/how-to-use-secretstorage-in-your-vscode-extensions-2hco
+        https://www.eliostruyf.com/devhack-code-extension-storage-options/
+        */
 
 	async getState() {
 		const [
@@ -1573,13 +1575,13 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	}
 
 	// private async clearState() {
-	// 	this.context.workspaceState.keys().forEach((key) => {
-	// 		this.context.workspaceState.update(key, undefined)
-	// 	})
-	// 	this.context.globalState.keys().forEach((key) => {
-	// 		this.context.globalState.update(key, undefined)
-	// 	})
-	// 	this.context.secrets.delete("apiKey")
+	//      this.context.workspaceState.keys().forEach((key) => {
+	//              this.context.workspaceState.update(key, undefined)
+	//      })
+	//      this.context.globalState.keys().forEach((key) => {
+	//              this.context.globalState.update(key, undefined)
+	//      })
+	//      this.context.secrets.delete("apiKey")
 	// }
 
 	// secrets

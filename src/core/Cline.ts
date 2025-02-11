@@ -427,8 +427,8 @@ export class Cline {
 				) // ask is only used to relinquish control, its the last say we care about
 				// if undefined, then we get diff from beginning of git
 				// if (!lastTaskCompletedMessage) {
-				// 	console.error("No previous task completion message found")
-				// 	return
+				//      console.error("No previous task completion message found")
+				//      return
 				// }
 
 				// Get changed files between current state and commit
@@ -462,11 +462,11 @@ export class Cline {
 		// const isMultiDiffEnabled = config.get("multiDiffEditor.experimental.enabled")
 
 		// if (!isMultiDiffEnabled) {
-		// 	vscode.window.showErrorMessage(
-		// 		"Please enable 'multiDiffEditor.experimental.enabled' in your VS Code settings to use this feature.",
-		// 	)
-		// 	relinquishButton()
-		// 	return
+		//      vscode.window.showErrorMessage(
+		//              "Please enable 'multiDiffEditor.experimental.enabled' in your VS Code settings to use this feature.",
+		//      )
+		//      relinquishButton()
+		//      return
 		// }
 		// Open multi-diff editor
 		await vscode.commands.executeCommand(
@@ -590,11 +590,11 @@ export class Cline {
 					this.askResponseImages = undefined
 
 					/*
-					Bug for the history books:
-					In the webview we use the ts as the chatrow key for the virtuoso list. Since we would update this ts right at the end of streaming, it would cause the view to flicker. The key prop has to be stable otherwise react has trouble reconciling items between renders, causing unmounting and remounting of components (flickering).
-					The lesson here is if you see flickering when rendering lists, it's likely because the key prop is not stable.
-					So in this case we must make sure that the message ts is never altered after first setting it.
-					*/
+                                        Bug for the history books:
+                                        In the webview we use the ts as the chatrow key for the virtuoso list. Since we would update this ts right at the end of streaming, it would cause the view to flicker. The key prop has to be stable otherwise react has trouble reconciling items between renders, causing unmounting and remounting of components (flickering).
+                                        The lesson here is if you see flickering when rendering lists, it's likely because the key prop is not stable.
+                                        So in this case we must make sure that the message ts is never altered after first setting it.
+                                        */
 					askTs = lastMessage.ts
 					this.lastMessageTs = askTs
 					// lastMessage.ts = askTs
@@ -789,7 +789,7 @@ export class Cline {
 		// TODO: right now we let users init checkpoints for old tasks, assuming they're continuing them from the same workspace (which we never tied to tasks, so no way for us to know if it's opened in the right workspace)
 		// const doesShadowGitExist = await CheckpointTracker.doesShadowGitExist(this.taskId, this.providerRef.deref())
 		// if (!doesShadowGitExist) {
-		// 	this.checkpointTrackerErrorMessage = "Checkpoints are only available for new tasks"
+		//      this.checkpointTrackerErrorMessage = "Checkpoints are only available for new tasks"
 		// }
 
 		const modifiedClineMessages = await this.getSavedClineMessages()
@@ -830,12 +830,12 @@ export class Cline {
 		// const lastClineMessage = this.clineMessages[lastClineMessageIndex]
 		// could be a completion result with a command
 		// const secondLastClineMessage = this.clineMessages
-		// 	.slice()
-		// 	.reverse()
-		// 	.find(
-		// 		(m, index) =>
-		// 			index !== lastClineMessageIndex && !(m.ask === "resume_task" || m.ask === "resume_completed_task")
-		// 	)
+		//      .slice()
+		//      .reverse()
+		//      .find(
+		//              (m, index) =>
+		//                      index !== lastClineMessageIndex && !(m.ask === "resume_task" || m.ask === "resume_completed_task")
+		//      )
 		// (lastClineMessage?.ask === "command" && secondLastClineMessage?.ask === "completion_result")
 
 		let askType: ClineAsk
@@ -1049,8 +1049,8 @@ export class Cline {
 				break
 			} else {
 				// this.say(
-				// 	"tool",
-				// 	"Cline responded with only text blocks but has not called attempt_completion yet. Forcing him to continue with task..."
+				//      "tool",
+				//      "Cline responded with only text blocks but has not called attempt_completion yet. Forcing him to continue with task..."
 				// )
 				nextUserContent = [
 					{
@@ -1106,32 +1106,32 @@ export class Cline {
 			// Previously we checkpointed every message, but this is excessive and unnecessary.
 			// // Start from the end and work backwards until we find a tool use or another message with a hash
 			// for (let i = this.clineMessages.length - 1; i >= 0; i--) {
-			// 	const message = this.clineMessages[i]
-			// 	if (message.lastCheckpointHash) {
-			// 		// Found a message with a hash, so we can stop
-			// 		break
-			// 	}
-			// 	// Update this message with a hash
-			// 	message.lastCheckpointHash = commitHash
+			//      const message = this.clineMessages[i]
+			//      if (message.lastCheckpointHash) {
+			//              // Found a message with a hash, so we can stop
+			//              break
+			//      }
+			//      // Update this message with a hash
+			//      message.lastCheckpointHash = commitHash
 
-			// 	// We only care about adding the hash to the last tool use (we don't want to add this hash to every prior message ie for tasks pre-checkpoint)
-			// 	const isToolUse =
-			// 		message.say === "tool" ||
-			// 		message.ask === "tool" ||
-			// 		message.say === "command" ||
-			// 		message.ask === "command" ||
-			// 		message.say === "completion_result" ||
-			// 		message.ask === "completion_result" ||
-			// 		message.ask === "followup" ||
-			// 		message.say === "use_mcp_server" ||
-			// 		message.ask === "use_mcp_server" ||
-			// 		message.say === "browser_action" ||
-			// 		message.say === "browser_action_launch" ||
-			// 		message.ask === "browser_action_launch"
+			//      // We only care about adding the hash to the last tool use (we don't want to add this hash to every prior message ie for tasks pre-checkpoint)
+			//      const isToolUse =
+			//              message.say === "tool" ||
+			//              message.ask === "tool" ||
+			//              message.say === "command" ||
+			//              message.ask === "command" ||
+			//              message.say === "completion_result" ||
+			//              message.ask === "completion_result" ||
+			//              message.ask === "followup" ||
+			//              message.say === "use_mcp_server" ||
+			//              message.ask === "use_mcp_server" ||
+			//              message.say === "browser_action" ||
+			//              message.say === "browser_action_launch" ||
+			//              message.ask === "browser_action_launch"
 
-			// 	if (isToolUse) {
-			// 		break
-			// 	}
+			//      if (isToolUse) {
+			//              break
+			//      }
 			// }
 			// // Save the updated messages
 			// await this.saveClineMessages()
@@ -1368,6 +1368,7 @@ export class Cline {
 					// this will never happen since if noButtonClicked, we will clear current task, aborting this instance
 					throw new Error("API request failed")
 				}
+				console.error("API request failed after retrying once:", error)
 				await this.say("api_req_retried")
 			}
 			// delegate generator output from the recursive call
@@ -1546,25 +1547,25 @@ export class Cline {
 							await this.say("user_feedback", text, images)
 							pushToolResult(formatResponse.toolResult(formatResponse.toolDeniedWithFeedback(text), images))
 							// this.userMessageContent.push({
-							// 	type: "text",
-							// 	text: `${toolDescription()}`,
+							//      type: "text",
+							//      text: `${toolDescription()}`,
 							// })
 							// this.toolResults.push({
-							// 	type: "tool_result",
-							// 	tool_use_id: toolUseId,
-							// 	content: this.formatToolResponseWithImages(
-							// 		await this.formatToolDeniedFeedback(text),
-							// 		images
-							// 	),
+							//      type: "tool_result",
+							//      tool_use_id: toolUseId,
+							//      content: this.formatToolResponseWithImages(
+							//              await this.formatToolDeniedFeedback(text),
+							//              images
+							//      ),
 							// })
 							this.didRejectTool = true
 							return false
 						}
 						pushToolResult(formatResponse.toolDenied())
 						// this.toolResults.push({
-						// 	type: "tool_result",
-						// 	tool_use_id: toolUseId,
-						// 	content: await this.formatToolDenied(),
+						//      type: "tool_result",
+						//      tool_use_id: toolUseId,
+						//      content: await this.formatToolDenied(),
 						// })
 						this.didRejectTool = true
 						return false
@@ -1592,9 +1593,9 @@ export class Cline {
 						`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
 					)
 					// this.toolResults.push({
-					// 	type: "tool_result",
-					// 	tool_use_id: toolUseId,
-					// 	content: await this.formatToolError(errorString),
+					//      type: "tool_result",
+					//      tool_use_id: toolUseId,
+					//      content: await this.formatToolError(errorString),
 					// })
 					pushToolResult(formatResponse.toolError(errorString))
 				}
@@ -1782,10 +1783,10 @@ export class Cline {
 									...sharedMessageProps,
 									content: diff || content,
 									// ? formatResponse.createPrettyPatch(
-									// 		relPath,
-									// 		this.diffViewProvider.originalContent,
-									// 		newContent,
-									// 	)
+									//              relPath,
+									//              this.diffViewProvider.originalContent,
+									//              newContent,
+									//      )
 									// : undefined,
 								} satisfies ClineSayTool)
 
@@ -2348,10 +2349,10 @@ export class Cline {
 								if (this.shouldAutoApproveTool(block.name)) {
 									// since depending on an upcoming parameter, requiresApproval this may become an ask - we cant partially stream a say prematurely. So in this particular case we have to wait for the requiresApproval parameter to be completed before presenting it.
 									// await this.say(
-									// 	"command",
-									// 	removeClosingTag("command", command),
-									// 	undefined,
-									// 	block.partial,
+									//      "command",
+									//      removeClosingTag("command", command),
+									//      undefined,
+									//      block.partial,
 									// ).catch(() => {})
 								} else {
 									// don't need to remove last partial since we couldn't have streamed a say
@@ -2479,9 +2480,9 @@ export class Cline {
 								}
 								// arguments are optional, but if they are provided they must be valid JSON
 								// if (!mcp_arguments) {
-								// 	this.consecutiveMistakeCount++
-								// 	pushToolResult(await this.sayAndCreateMissingParamError("use_mcp_tool", "arguments"))
-								// 	break
+								//      this.consecutiveMistakeCount++
+								//      pushToolResult(await this.sayAndCreateMissingParamError("use_mcp_tool", "arguments"))
+								//      break
 								// }
 								let parsedArguments: Record<string, unknown> | undefined
 								if (mcp_arguments) {
@@ -2696,10 +2697,10 @@ export class Cline {
 								this.consecutiveMistakeCount = 0
 
 								// if (this.autoApprovalSettings.enabled && this.autoApprovalSettings.enableNotifications) {
-								// 	showSystemNotification({
-								// 		subtitle: "Cline has a response...",
-								// 		message: response.replace(/\n/g, " "),
-								// 	})
+								//      showSystemNotification({
+								//              subtitle: "Cline has a response...",
+								//              message: response.replace(/\n/g, " "),
+								//      })
 								// }
 
 								this.isAwaitingPlanResponse = true
@@ -2730,25 +2731,25 @@ export class Cline {
 					}
 					case "attempt_completion": {
 						/*
-						this.consecutiveMistakeCount = 0
-						let resultToSend = result
-						if (command) {
-							await this.say("completion_result", resultToSend)
-							// TODO: currently we don't handle if this command fails, it could be useful to let cline know and retry
-							const [didUserReject, commandResult] = await this.executeCommand(command, true)
-							// if we received non-empty string, the command was rejected or failed
-							if (commandResult) {
-								return [didUserReject, commandResult]
-							}
-							resultToSend = ""
-						}
-						const { response, text, images } = await this.ask("completion_result", resultToSend) // this prompts webview to show 'new task' button, and enable text input (which would be the 'text' here)
-						if (response === "yesButtonClicked") {
-							return [false, ""] // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
-						}
-						await this.say("user_feedback", text ?? "", images)
-						return [
-						*/
+                                                this.consecutiveMistakeCount = 0
+                                                let resultToSend = result
+                                                if (command) {
+                                                        await this.say("completion_result", resultToSend)
+                                                        // TODO: currently we don't handle if this command fails, it could be useful to let cline know and retry
+                                                        const [didUserReject, commandResult] = await this.executeCommand(command, true)
+                                                        // if we received non-empty string, the command was rejected or failed
+                                                        if (commandResult) {
+                                                                return [didUserReject, commandResult]
+                                                        }
+                                                        resultToSend = ""
+                                                }
+                                                const { response, text, images } = await this.ask("completion_result", resultToSend) // this prompts webview to show 'new task' button, and enable text input (which would be the 'text' here)
+                                                if (response === "yesButtonClicked") {
+                                                        return [false, ""] // signals to recursive loop to stop (for now this never happens since yesButtonClicked will trigger a new task)
+                                                }
+                                                await this.say("user_feedback", text ?? "", images)
+                                                return [
+                                                */
 						const result: string | undefined = block.params.result
 						const command: string | undefined = block.params.command
 
@@ -2891,9 +2892,9 @@ export class Cline {
 		}
 
 		/*
-		Seeing out of bounds is fine, it means that the next too call is being built up and ready to add to assistantMessageContent to present. 
-		When you see the UI inactive during this, it means that a tool is breaking without presenting any UI. For example the write_to_file tool was breaking when relpath was undefined, and for invalid relpath it never presented UI.
-		*/
+                Seeing out of bounds is fine, it means that the next too call is being built up and ready to add to assistantMessageContent to present. 
+                When you see the UI inactive during this, it means that a tool is breaking without presenting any UI. For example the write_to_file tool was breaking when relpath was undefined, and for invalid relpath it never presented UI.
+                */
 		this.presentAssistantMessageLocked = false // this needs to be placed here, if not then calling this.presentAssistantMessage below would fail (sometimes) since it's locked
 		// NOTE: when tool is rejected, iterator stream is interrupted and it waits for userMessageContentReady to be true. Future calls to present will skip execution since didRejectTool and iterate until contentIndex is set to message length and it sets userMessageContentReady to true itself (instead of preemptively doing it in iterator)
 		if (!block.partial || this.didRejectTool || this.didAlreadyUseTool) {
@@ -3230,7 +3231,7 @@ export class Cline {
 				// it may be the api stream finished after the last parsed content block was executed, so  we are able to detect out of bounds and set userMessageContentReady to true (note you should not call presentAssistantMessage since if the last block is completed it will be presented again)
 				// const completeBlocks = this.assistantMessageContent.filter((block) => !block.partial) // if there are any partial blocks after the stream ended we can consider them invalid
 				// if (this.currentStreamingContentIndex >= completeBlocks.length) {
-				// 	this.userMessageContentReady = true
+				//      this.userMessageContentReady = true
 				// }
 
 				await pWaitFor(() => this.userMessageContentReady)
@@ -3251,6 +3252,7 @@ export class Cline {
 				didEndLoop = recDidEndLoop
 			} else {
 				// if there's no assistant_responses, that means we got no text or tool_use content blocks from API which we should assume is an error
+				console.error("Unexpected API Response: No assistant messages received.")
 				await this.say(
 					"error",
 					"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
@@ -3363,21 +3365,21 @@ export class Cline {
 
 		// we want to get diagnostics AFTER terminal cools down for a few reasons: terminal could be scaffolding a project, dev servers (compilers like webpack) will first re-compile and then send diagnostics, etc
 		/*
-		let diagnosticsDetails = ""
-		const diagnostics = await this.diagnosticsMonitor.getCurrentDiagnostics(this.didEditFile || terminalWasBusy) // if cline ran a command (ie npm install) or edited the workspace then wait a bit for updated diagnostics
-		for (const [uri, fileDiagnostics] of diagnostics) {
-			const problems = fileDiagnostics.filter((d) => d.severity === vscode.DiagnosticSeverity.Error)
-			if (problems.length > 0) {
-				diagnosticsDetails += `\n## ${path.relative(cwd, uri.fsPath)}`
-				for (const diagnostic of problems) {
-					// let severity = diagnostic.severity === vscode.DiagnosticSeverity.Error ? "Error" : "Warning"
-					const line = diagnostic.range.start.line + 1 // VSCode lines are 0-indexed
-					const source = diagnostic.source ? `[${diagnostic.source}] ` : ""
-					diagnosticsDetails += `\n- ${source}Line ${line}: ${diagnostic.message}`
-				}
-			}
-		}
-		*/
+                let diagnosticsDetails = ""
+                const diagnostics = await this.diagnosticsMonitor.getCurrentDiagnostics(this.didEditFile || terminalWasBusy) // if cline ran a command (ie npm install) or edited the workspace then wait a bit for updated diagnostics
+                for (const [uri, fileDiagnostics] of diagnostics) {
+                        const problems = fileDiagnostics.filter((d) => d.severity === vscode.DiagnosticSeverity.Error)
+                        if (problems.length > 0) {
+                                diagnosticsDetails += `\n## ${path.relative(cwd, uri.fsPath)}`
+                                for (const diagnostic of problems) {
+                                        // let severity = diagnostic.severity === vscode.DiagnosticSeverity.Error ? "Error" : "Warning"
+                                        const line = diagnostic.range.start.line + 1 // VSCode lines are 0-indexed
+                                        const source = diagnostic.source ? `[${diagnostic.source}] ` : ""
+                                        diagnosticsDetails += `\n- ${source}Line ${line}: ${diagnostic.message}`
+                                }
+                        }
+                }
+                */
 		this.didEditFile = false // reset, this lets us know when to wait for saved files to update terminals
 
 		// waiting for updated diagnostics lets terminal output be the most up-to-date possible
@@ -3418,9 +3420,9 @@ export class Cline {
 
 		// details += "\n\n# VSCode Workspace Errors"
 		// if (diagnosticsDetails) {
-		// 	details += diagnosticsDetails
+		//      details += diagnosticsDetails
 		// } else {
-		// 	details += "\n(No errors detected)"
+		//      details += "\n(No errors detected)"
 		// }
 
 		if (terminalDetails) {
