@@ -1086,12 +1086,21 @@ export class Cline {
 				},
 			]
 
-			// Add a message to indicate summarization
-			await this.say("text", "Context has been summarized to reduce token usage. Essential information has been preserved.")
+			// Create a new message to show in the UI
+			const summaryNotification: ClineMessage = {
+				ts: Date.now(),
+				type: "say",
+				say: "text",
+				text: "Context has been summarized to reduce token usage. Essential information has been preserved.",
+				conversationHistoryIndex: 1,
+			}
+
+			// Add the notification to clineMessages
+			this.clineMessages.push(summaryNotification)
 
 			// Update the conversation history index for all messages
 			this.clineMessages.forEach((msg) => {
-				if (msg.conversationHistoryIndex !== undefined) {
+				if (msg.conversationHistoryIndex !== undefined && msg !== summaryNotification) {
 					msg.conversationHistoryIndex = 1 // Point to the summary message
 				}
 			})
@@ -1101,7 +1110,15 @@ export class Cline {
 			await this.saveClineMessages()
 		} catch (error) {
 			console.error("Failed to summarize context:", error)
-			await this.say("error", "Failed to summarize context. The conversation history remains unchanged.")
+			const errorNotification: ClineMessage = {
+				ts: Date.now(),
+				type: "say",
+				say: "error",
+				text: "Failed to summarize context. The conversation history remains unchanged.",
+			}
+			this.clineMessages.push(errorNotification)
+			await this.saveClineMessages()
+			throw error // Re-throw to trigger the error UI state
 		}
 	}
 
