@@ -768,10 +768,17 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							try {
 								await this.cline.summarizeContext()
 								await this.postStateToWebview()
-								vscode.window.showInformationMessage("Context has been summarized successfully")
+								await this.postMessageToWebview({
+									type: "summarizeContextResult",
+									success: true,
+								})
 							} catch (error) {
 								const errorMessage = error instanceof Error ? error.message : "Unknown error"
-								vscode.window.showErrorMessage("Failed to summarize context: " + errorMessage)
+								await this.postMessageToWebview({
+									type: "summarizeContextResult",
+									success: false,
+									error: errorMessage,
+								})
 							}
 						}
 						break

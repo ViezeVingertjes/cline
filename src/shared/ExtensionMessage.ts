@@ -26,7 +26,10 @@ export interface ExtensionMessage {
 		| "vsCodeLmModels"
 		| "requestVsCodeLmModels"
 		| "emailSubscribed"
+		| "summarizeContextResult"
 	text?: string
+	success?: boolean
+	error?: string
 	action?:
 		| "chatButtonClicked"
 		| "mcpButtonClicked"

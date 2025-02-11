@@ -33,6 +33,17 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 	lastApiReqTotalTokens,
 	onClose,
 }) => {
+	const [summarizeState, setSummarizeState] = useState<"idle" | "loading" | "success" | "error">("idle")
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			if (event.data.type === "summarizeContextResult") {
+				setSummarizeState(event.data.success ? "success" : "error")
+				setTimeout(() => setSummarizeState("idle"), 2000)
+			}
+		}
+		window.addEventListener("message", handleMessage)
+		return () => window.removeEventListener("message", handleMessage)
+	}, [])
 	const { apiConfiguration, currentTaskItem, checkpointTrackerErrorMessage } = useExtensionState()
 	const [isTaskExpanded, setIsTaskExpanded] = useState(true)
 	const [isTextExpanded, setIsTextExpanded] = useState(false)
@@ -127,19 +138,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							gap: "4px",
 							flexShrink: 0, // Prevents shrinking
 						}}>
-						<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-							<span style={{ fontWeight: "bold" }}>Context Window:</span>
-							<VSCodeButton
-								appearance="icon"
-								title="Summarize context to reduce token usage"
-								onClick={() =>
-									vscode.postMessage({
-										type: "summarizeContext",
-									})
-								}>
-								<span className="codicon codicon-combine" />
-							</VSCodeButton>
-						</div>
+						<span style={{ fontWeight: "bold" }}>Context Window:</span>
 					</div>
 					<div
 						style={{
@@ -256,6 +255,38 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 							${totalCost?.toFixed(4)}
 						</div>
 					)}
+					<VSCodeButton
+						appearance="icon"
+						title="Summarize context to reduce token usage"
+						onClick={() => {
+							setSummarizeState("loading")
+							vscode.postMessage({
+								type: "summarizeContext",
+							})
+						}}
+						disabled={summarizeState !== "idle"}
+						style={{
+							marginLeft: 6,
+							flexShrink: 0,
+							color:
+								summarizeState === "success"
+									? "var(--vscode-testing-iconPassed)"
+									: summarizeState === "error"
+										? "var(--vscode-testing-iconFailed)"
+										: "inherit",
+						}}>
+						<span
+							className={`codicon ${
+								summarizeState === "loading"
+									? "codicon-loading codicon-modifier-spin"
+									: summarizeState === "success"
+										? "codicon-check"
+										: summarizeState === "error"
+											? "codicon-error"
+											: "codicon-combine"
+							}`}
+						/>
+					</VSCodeButton>
 					<VSCodeButton appearance="icon" onClick={onClose} style={{ marginLeft: 6, flexShrink: 0 }}>
 						<span className="codicon codicon-close"></span>
 					</VSCodeButton>
