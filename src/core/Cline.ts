@@ -1067,33 +1067,36 @@ export class Cline {
 
 		try {
 			// Make API request for summary
-			const summarySystemPrompt = `You are helping to summarize our conversation to reduce context length while maintaining essential information. Create a concise yet detailed summary following these rules:
+			const summarySystemPrompt = `You are helping to summarize our conversation to reduce context length while maintaining essential information. Create a structured summary following these rules:
 
-1. Focus on technical details:
-   - Include all file paths, function names, and code changes
-   - Preserve package names, libraries, and tools used
-   - Keep error messages and important warnings
-   - Maintain references to configuration changes
+1. Progress Summary (What has been done):
+   - Start with "I asked you to [original task]"
+   - List completed actions chronologically
+   - Include file paths and code changes made
+   - Mention any errors encountered and how they were resolved
+   - Note any configuration changes or environment setup
 
-2. Structure the summary:
-   - Start each new topic or task with a new paragraph
-   - Give more detail to recent messages, less to older ones
-   - Use first-person perspective ("I asked you to...")
-   - Maintain chronological order but emphasize the current task
+2. Technical Details (Must preserve):
+   - All file paths and their current state
+   - Function names and code changes
+   - Package names and library versions
+   - Command sequences that were successful
+   - Error messages that were important
 
-3. Essential elements:
-   - Keep all file paths mentioned in the conversation
-   - Preserve command sequences and their results
-   - Include any environment or setup details
-   - Note any pending or incomplete tasks
+3. Current State (Where we are now):
+   - What we're currently working on
+   - Any pending changes or uncommitted work
+   - Recent errors or issues being addressed
+   - Files currently being modified
 
-4. Format:
-   - Write in a clear, technical style
-   - Don't use code blocks, but do mention code changes
-   - Don't add concluding statements (this is an ongoing conversation)
-   - Keep URLs and API endpoints exactly as shown
+4. Format Requirements:
+   - Use first-person perspective consistently
+   - Keep exact file paths, function names, and commands
+   - Mention code changes without code blocks
+   - Maintain chronological order
+   - Be specific about what worked and what didn't
 
-The summary should allow us to continue the conversation with all necessary context while reducing token usage.`
+The summary must preserve enough context to continue the task while focusing on the most relevant information for the current state.`
 			const stream = this.api.createMessage(summarySystemPrompt, this.apiConversationHistory)
 
 			let summary = ""
@@ -1101,15 +1104,68 @@ The summary should allow us to continue the conversation with all necessary cont
 				summary += chunk
 			}
 
-			// Keep the first message (original task) and add the summary
+			// Keep the original task and gather context
 			const originalTask = this.apiConversationHistory[0]
+
+			// Find the last significant actions and state changes
+			const lastActions = this.clineMessages
+				.filter(
+					(msg) =>
+						(msg.say === "tool" || msg.say === "command" || msg.say === "completion_result") &&
+						msg.text &&
+						!msg.text.includes("error"),
+				)
+				.slice(-2) // Keep last two successful actions
+
+			const lastError = this.clineMessages
+				.filter((msg) => msg.say === "error" || (msg.text && msg.text.includes("error")))
+				.pop()
+
+			// Get the most recent messages to maintain immediate context
+			const recentMessages = this.apiConversationHistory
+				.slice(-2) // Get last two messages
+				.filter(
+					(msg) =>
+						msg !== originalTask && // Don't duplicate the original task
+						msg.content &&
+						msg.content.trim() !== "", // Ensure message has content
+				)
+
+			// Get the current state from the most recent message
+			const currentState =
+				this.apiConversationHistory[this.apiConversationHistory.length - 1]?.content || "Continuing the task..."
+
+			// Create a comprehensive summary message
+			const summaryMessage = {
+				role: "assistant" as const,
+				content: `[Previous Context Summary]
+${summary}
+
+[Recent Actions]
+${
+	lastActions.length > 0
+		? lastActions.map((action) => `- ${action.say === "tool" ? "Used tool" : action.say}: ${action.text}`).join("\n")
+		: "No recent actions"
+}
+${lastError ? `\n[Last Error Encountered]\n${lastError.text}` : ""}
+
+[Current State]
+${currentState}
+
+[Active Context]
+${recentMessages.map((msg) => msg.content).join("\n")}
+[End Summary]`,
+			}
+
+			// Construct the new conversation history with:
+			// 1. Original task to maintain context
+			// 2. Comprehensive summary of previous work
+			// 3. Most recent messages for immediate context
 			this.apiConversationHistory = [
 				originalTask,
-				{
-					role: "assistant",
-					content: `[Previous Context Summary]\n${summary}\n[End Summary]`,
-				},
-			]
+				summaryMessage,
+				...recentMessages.slice(-1), // Only keep the very last message for immediate context
+			].filter(Boolean)
 
 			// Create a new message to show in the UI
 			const summaryNotification: ClineMessage = {
