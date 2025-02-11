@@ -1067,8 +1067,33 @@ export class Cline {
 
 		try {
 			// Make API request for summary
-			const summarySystemPrompt =
-				"You are helping to summarize the conversation to reduce context length while maintaining essential information. Provide a concise summary focusing on the most important actions and decisions. Include only the essential context needed to continue the task effectively."
+			const summarySystemPrompt = `You are helping to summarize our conversation to reduce context length while maintaining essential information. Create a concise yet detailed summary following these rules:
+
+1. Focus on technical details:
+   - Include all file paths, function names, and code changes
+   - Preserve package names, libraries, and tools used
+   - Keep error messages and important warnings
+   - Maintain references to configuration changes
+
+2. Structure the summary:
+   - Start each new topic or task with a new paragraph
+   - Give more detail to recent messages, less to older ones
+   - Use first-person perspective ("I asked you to...")
+   - Maintain chronological order but emphasize the current task
+
+3. Essential elements:
+   - Keep all file paths mentioned in the conversation
+   - Preserve command sequences and their results
+   - Include any environment or setup details
+   - Note any pending or incomplete tasks
+
+4. Format:
+   - Write in a clear, technical style
+   - Don't use code blocks, but do mention code changes
+   - Don't add concluding statements (this is an ongoing conversation)
+   - Keep URLs and API endpoints exactly as shown
+
+The summary should allow us to continue the conversation with all necessary context while reducing token usage.`
 			const stream = this.api.createMessage(summarySystemPrompt, this.apiConversationHistory)
 
 			let summary = ""
